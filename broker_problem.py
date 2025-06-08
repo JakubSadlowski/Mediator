@@ -1,6 +1,7 @@
 import copy
 
 def compute_profit_matrix(purchase_costs, selling_prices, transport_costs):
+    """Oblicza macierz zysków dla każdej pary dostawca-odbiorca"""
     return [
         [
             selling_prices[j] - purchase_costs[i] - transport_costs[i][j]
@@ -10,6 +11,7 @@ def compute_profit_matrix(purchase_costs, selling_prices, transport_costs):
     ]
 
 def balance_problem(supply, demand, profit_matrix, transport_costs):
+    """Bilansuje problem poprzez dodanie fikcyjnego dostawcy lub odbiorcy"""
     total_supply = sum(supply)
     total_demand = sum(demand)
     
@@ -31,33 +33,39 @@ def balance_problem(supply, demand, profit_matrix, transport_costs):
     
     return balanced_supply, balanced_demand, balanced_profit_matrix, balanced_transport_costs
 
-def max_profit_method(supply, demand, profit_matrix, transport_costs):
+def max_profit_method_with_iterations(supply, demand, profit_matrix):
+    """Rozwiązuje problem metodą maksymalnego zysku, zwracając także liczbę iteracji"""
     supply = copy.deepcopy(supply)
     demand = copy.deepcopy(demand)
     allocation = [[0] * len(demand) for _ in range(len(supply))]
+    iterations = 0
     
     routes = []
     for i in range(len(supply)):
         for j in range(len(demand)):
             routes.append((
                 -profit_matrix[i][j],  # Sortowanie po zysku (malejąco)
-                transport_costs[i][j],  # Drugie kryterium (niższe koszty lepsze)
                 i, j
             ))
+            iterations += 1
     
     routes.sort()
+    iterations += len(routes) * 3  # Estimate for sorting
     
-    for _, _, i, j in routes:
+    for _, i, j in routes:
         if supply[i] == 0 or demand[j] == 0:
+            iterations += 1
             continue
         quantity = min(supply[i], demand[j])
         allocation[i][j] = quantity
         supply[i] -= quantity
         demand[j] -= quantity
+        iterations += 4
     
-    return allocation
+    return allocation, iterations
 
 def compute_summary(allocation, original_supply, original_demand, purchase_costs, selling_prices, transport_costs):
+    """Oblicza podsumowanie finansowe rozwiązania"""
     total_purchase = 0
     total_transport = 0
     total_revenue = 0
@@ -65,15 +73,10 @@ def compute_summary(allocation, original_supply, original_demand, purchase_costs
     for i in range(len(original_supply)):
         for j in range(len(original_demand)):
             if allocation[i][j] > 0:
-                if (i < len(purchase_costs) and 
-                    j < len(selling_prices) and 
-                    i < len(transport_costs) and 
-                    j < len(transport_costs[i])):
-                    
-                    qty = allocation[i][j]
-                    total_purchase += qty * purchase_costs[i]
-                    total_transport += qty * transport_costs[i][j]
-                    total_revenue += qty * selling_prices[j]
+                qty = allocation[i][j]
+                total_purchase += qty * purchase_costs[i]
+                total_transport += qty * transport_costs[i][j]
+                total_revenue += qty * selling_prices[j]
     
     total_profit = total_revenue - total_purchase - total_transport
     return total_purchase, total_transport, total_revenue, total_profit
