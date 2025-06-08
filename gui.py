@@ -11,7 +11,7 @@ from file_operations import save_to_csv, load_from_csv
 class BrokerProblemGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("Problem Pośrednika - Broker Problem Solver")
+        self.root.title("Broker Problem Solver")
         self.setup_ui()
         
     def setup_ui(self):
@@ -38,62 +38,57 @@ class BrokerProblemGUI:
         self.update_data_inputs()
     
     def create_config_section(self):
-        config_frame = ttk.LabelFrame(self.main_frame, text="Konfiguracja", padding="10")
+        config_frame = ttk.LabelFrame(self.main_frame, text="Configuration", padding="10")
         config_frame.grid(row=1, column=0, columnspan=2, pady=10, sticky=(tk.W, tk.E))
         
-        ttk.Label(config_frame, text="Liczba dostawców:").grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
+        ttk.Label(config_frame, text="Number of suppliers:").grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
         ttk.Spinbox(config_frame, from_=1, to=10, textvariable=self.num_suppliers, 
                    command=self.update_data_inputs).grid(row=0, column=1, padx=5, pady=5)
         
-        ttk.Label(config_frame, text="Liczba odbiorców:").grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
+        ttk.Label(config_frame, text="Number of receivers:").grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
         ttk.Spinbox(config_frame, from_=1, to=10, textvariable=self.num_customers, 
                    command=self.update_data_inputs).grid(row=1, column=1, padx=5, pady=5)
     
     def create_data_input_section(self):
-        self.data_frame = ttk.LabelFrame(self.main_frame, text="Dane wejściowe", padding="10")
+        self.data_frame = ttk.LabelFrame(self.main_frame, text="Input data", padding="10")
         self.data_frame.grid(row=2, column=0, columnspan=2, pady=10, sticky=(tk.W, tk.E))
         self.update_data_inputs()
     
     def update_data_inputs(self):
         for widget in self.data_frame.winfo_children():
             widget.destroy()
-            
-        # Supply section
-        ttk.Label(self.data_frame, text="Podaż:").grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
+
+        ttk.Label(self.data_frame, text="Supply:").grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
         self.supply_entries = []
         for i in range(self.num_suppliers.get()):
             entry = ttk.Entry(self.data_frame, width=8)
             entry.grid(row=0, column=i+1, padx=5, pady=5)
             self.supply_entries.append(entry)
             ttk.Label(self.data_frame, text=f"D{i+1}").grid(row=1, column=i+1)
-        
-        # Purchase costs
-        ttk.Label(self.data_frame, text="Koszt zakupu:").grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
+
+        ttk.Label(self.data_frame, text="Purchase cost:").grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
         self.purchase_cost_entries = []
         for i in range(self.num_suppliers.get()):
             entry = ttk.Entry(self.data_frame, width=8)
             entry.grid(row=2, column=i+1, padx=5, pady=5)
             self.purchase_cost_entries.append(entry)
-        
-        # Demand section
-        ttk.Label(self.data_frame, text="Popyt:").grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
+
+        ttk.Label(self.data_frame, text="Demand:").grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
         self.demand_entries = []
         for j in range(self.num_customers.get()):
             entry = ttk.Entry(self.data_frame, width=8)
             entry.grid(row=3, column=j+1, padx=5, pady=5)
             self.demand_entries.append(entry)
             ttk.Label(self.data_frame, text=f"O{j+1}").grid(row=4, column=j+1)
-        
-        # Selling prices
-        ttk.Label(self.data_frame, text="Cena sprzedaży:").grid(row=5, column=0, padx=5, pady=5, sticky=tk.W)
+
+        ttk.Label(self.data_frame, text="Selling price:").grid(row=5, column=0, padx=5, pady=5, sticky=tk.W)
         self.selling_price_entries = []
         for j in range(self.num_customers.get()):
             entry = ttk.Entry(self.data_frame, width=8)
             entry.grid(row=5, column=j+1, padx=5, pady=5)
             self.selling_price_entries.append(entry)
-        
-        # Transport costs
-        ttk.Label(self.data_frame, text="Koszty transportu:").grid(row=6, column=0, padx=5, pady=5, sticky=tk.W)
+
+        ttk.Label(self.data_frame, text="Transport costs:").grid(row=6, column=0, padx=5, pady=5, sticky=tk.W)
         self.transport_cost_entries = []
         for i in range(self.num_suppliers.get()):
             row_entries = []
@@ -105,18 +100,17 @@ class BrokerProblemGUI:
             ttk.Label(self.data_frame, text=f"D{i+1}").grid(row=7+i, column=0, padx=5, pady=5)
     
     def create_results_section(self):
-        self.results_frame = ttk.LabelFrame(self.main_frame, text="Wyniki", padding="10")
+        self.results_frame = ttk.LabelFrame(self.main_frame, text="Results", padding="10")
         self.results_frame.grid(row=3, column=0, columnspan=2, pady=10, sticky=(tk.W, tk.E))
         
         self.allocation_text = tk.Text(self.results_frame, height=10, width=60, state=tk.DISABLED)
         self.allocation_text.grid(row=0, column=0, padx=5, pady=5, columnspan=2)
-        
-        # Add iterations label
-        ttk.Label(self.results_frame, text="Liczba iteracji:").grid(row=1, column=0, sticky=tk.W, padx=5, pady=2)
+
+        ttk.Label(self.results_frame, text="Number of iterations:").grid(row=1, column=0, sticky=tk.W, padx=5, pady=2)
         self.iterations_var = tk.StringVar()
         ttk.Label(self.results_frame, textvariable=self.iterations_var).grid(row=1, column=1, sticky=tk.W, padx=5, pady=2)
         
-        results_labels = ["Koszt zakupu:", "Koszt transportu:", "Przychód:", "Zysk:"]
+        results_labels = ["Purchase cost:", "Transport cost:", "Income:", "Profit:"]
         self.results_vars = []
         
         for i, label in enumerate(results_labels):
@@ -129,10 +123,10 @@ class BrokerProblemGUI:
         self.button_frame = ttk.Frame(self.main_frame)
         self.button_frame.grid(row=4, column=0, columnspan=2, pady=10)
         
-        ttk.Button(self.button_frame, text="Oblicz", command=self.solve_problem).grid(row=0, column=0, padx=5)
-        ttk.Button(self.button_frame, text="Wczytaj z pliku", command=self.load_from_file).grid(row=0, column=1, padx=5)
-        ttk.Button(self.button_frame, text="Zapisz do pliku", command=self.save_to_file).grid(row=0, column=2, padx=5)
-        ttk.Button(self.button_frame, text="Wyczyść", command=self.clear_all).grid(row=0, column=3, padx=5)
+        ttk.Button(self.button_frame, text="Calculate", command=self.solve_problem).grid(row=0, column=0, padx=5)
+        ttk.Button(self.button_frame, text="Read from csv file", command=self.load_from_file).grid(row=0, column=1, padx=5)
+        ttk.Button(self.button_frame, text="Save to csv file", command=self.save_to_file).grid(row=0, column=2, padx=5)
+        ttk.Button(self.button_frame, text="Clear data", command=self.clear_all).grid(row=0, column=3, padx=5)
     
     def solve_problem(self):
         try:
@@ -144,8 +138,7 @@ class BrokerProblemGUI:
                 [int(entry.get()) for entry in row] 
                 for row in self.transport_cost_entries
             ]
-            
-            # Compute using broker_problem module
+
             profit_matrix = compute_profit_matrix(purchase_costs, selling_prices, transport_costs)
             balanced_supply, balanced_demand, balanced_profit_matrix, _ = balance_problem(
                 supply, demand, profit_matrix, transport_costs)
@@ -157,16 +150,16 @@ class BrokerProblemGUI:
             self.display_results(allocation, total_purchase, total_transport, total_revenue, total_profit, iterations)
             
         except ValueError as e:
-            messagebox.showerror("Błąd danych", "Wprowadź poprawne wartości liczbowe we wszystkich polach.")
+            messagebox.showerror("Error in data", "Provide correct data types in the fields provided.")
         except Exception as e:
-            messagebox.showerror("Błąd obliczeń", str(e))
+            messagebox.showerror("Error in calculations", str(e))
     
     def display_results(self, allocation, total_purchase, total_transport, total_revenue, total_profit, iterations):
         self.allocation_text.config(state=tk.NORMAL)
         self.allocation_text.delete(1.0, tk.END)
         
         # Display allocation matrix
-        self.allocation_text.insert(tk.END, "Macierz alokacji:\n")
+        self.allocation_text.insert(tk.END, "Allocation matrix:\n")
         for i in range(len(self.supply_entries)):
             row_str = f"D{i+1}:\t"
             for j in range(len(self.demand_entries)):
@@ -212,10 +205,10 @@ class BrokerProblemGUI:
                     self.transport_cost_entries[i][j].delete(0, tk.END)
                     self.transport_cost_entries[i][j].insert(0, value)
             
-            messagebox.showinfo("Sukces", "Dane wczytane pomyślnie!")
+            messagebox.showinfo("Success", "Data loaded successfully!")
             
         except Exception as e:
-            messagebox.showerror("Błąd wczytywania", f"Nie udało się wczytać danych: {str(e)}")
+            messagebox.showerror("Loading error", f"Can't read data from file: {str(e)}")
     
     def save_to_file(self):
         file_path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
@@ -234,10 +227,10 @@ class BrokerProblemGUI:
                 ]
             }
             save_to_csv(file_path, data)
-            messagebox.showinfo("Sukces", "Dane zapisane pomyślnie!")
+            messagebox.showinfo("Success", "Data saved successfully!")
             
         except Exception as e:
-            messagebox.showerror("Błąd zapisywania", f"Nie udało się zapisać danych: {str(e)}")
+            messagebox.showerror("Saving error", f"Can't save data into file: {str(e)}")
     
     def clear_all(self):
         for entry in self.supply_entries:
