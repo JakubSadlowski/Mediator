@@ -1,7 +1,6 @@
-,100,80
-,3,4
-,70,60,50
-,10,12,9
-,O1,O2,O3
-D1,1,2,3
-D2,2,1,2
+supply,100,80
+purchase_costs,3,4
+demand,70,60,50
+selling_prices,10,12,9
+transport_costs,1,2,3
+transport_costs,2,1,2
