@@ -12,7 +12,7 @@ from file_operations import save_to_csv, load_from_csv
 class BrokerProblemGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("Profit Optimizer - Broker Problem")
+        self.root.title("Broker Problem Solver")
         self._is_loading = False
         self.style_ui()
         self.setup_ui()
@@ -83,7 +83,7 @@ class BrokerProblemGUI:
             self.demand_entries[j].grid(row=1, column=2 + j, padx=5, pady=5)
         ttk.Label(self.data_frame, text="Supply").grid(row=2, column=1, padx=5, pady=(15, 0), sticky="s")
         ttk.Label(self.data_frame, text="Purchase cost").grid(row=2, column=2 + num_c, padx=5, pady=(15, 0),
-                                                               sticky="s")
+                                                              sticky="s")
         for i in range(num_s):
             row = 3 + i
             ttk.Label(self.data_frame, text=f"Supplier {i + 1}").grid(row=row, column=0, padx=5, pady=5, sticky="e")
@@ -131,14 +131,20 @@ class BrokerProblemGUI:
         self.results_frame = ttk.LabelFrame(self.main_frame, text="Results", padding=10)
         self.results_frame.grid(row=3, column=0, sticky="nsew", padx=5)
         self.results_frame.columnconfigure(1, weight=1)
+
         self.allocation_text = tk.Text(self.results_frame, height=8, width=50, state=tk.DISABLED,
                                        font=("Courier New", 10))
         self.allocation_text.grid(row=0, column=0, columnspan=2, pady=5, sticky="ew")
-        results_labels = ["Purchase Cost:", "Transport Cost:", "Revenue:", "Profit:", "Iterations:"]
+
+        self.profit_matrix_text = tk.Text(self.results_frame, height=8, width=50, state=tk.DISABLED,
+                                          font=("Courier New", 10))
+        self.profit_matrix_text.grid(row=1, column=0, columnspan=2, pady=5, sticky="ew")
+
+        results_labels = ["Purchase Cost:", "Transport Cost:", "Income:", "Profit:", "Iterations:"]
         self.results_vars = [tk.StringVar() for _ in results_labels]
         for i, label in enumerate(results_labels):
-            ttk.Label(self.results_frame, text=label).grid(row=i + 1, column=0, sticky="w", pady=2)
-            ttk.Label(self.results_frame, textvariable=self.results_vars[i]).grid(row=i + 1, column=1, sticky="w",
+            ttk.Label(self.results_frame, text=label).grid(row=i + 2, column=0, sticky="w", pady=2)
+            ttk.Label(self.results_frame, textvariable=self.results_vars[i]).grid(row=i + 2, column=1, sticky="w",
                                                                                   padx=5)
 
     def solve_problem(self):
@@ -148,23 +154,31 @@ class BrokerProblemGUI:
             demand = [int(e.get()) for e in self.demand_entries]
             selling = [int(e.get()) for e in self.selling_price_entries]
             transport = [[int(e.get()) for e in row] for row in self.transport_cost_entries]
+
             profit_matrix = compute_profit_matrix(purchase, selling, transport)
+
             bs, bd, bpm, _ = balance_problem(supply, demand, profit_matrix, transport)
             allocation, iterations = max_profit_method_with_iterations(bs, bd, bpm)
             total_purchase, total_transport, revenue, profit = compute_summary(allocation, supply, demand, purchase,
                                                                                selling, transport)
-            self.display_results(allocation, total_purchase, total_transport, revenue, profit, iterations)
+            self.display_results(allocation, profit_matrix, total_purchase, total_transport, revenue, profit,
+                                 iterations)
         except (ValueError, IndexError):
             messagebox.showerror("Data Error", "Please enter valid data in all fields.")
         except Exception as e:
             messagebox.showerror("Calculation Error", str(e))
 
-    def display_results(self, allocation, purchase, transport, revenue, profit, iterations):
+    def display_results(self, allocation, profit_matrix, purchase, transport, revenue, profit, iterations):
         self.allocation_text.config(state=tk.NORMAL)
+        self.profit_matrix_text.config(state=tk.NORMAL)
         self.allocation_text.delete(1.0, tk.END)
+        self.profit_matrix_text.delete(1.0, tk.END)
+
         num_original_suppliers = len(self.supply_entries)
         num_original_customers = len(self.demand_entries)
+
         header = " " * 4 + "".join([f"C{j + 1:<7}" for j in range(num_original_customers)])
+
         self.allocation_text.insert(tk.END, "Allocation Matrix:\n")
         self.allocation_text.insert(tk.END, header + "\n")
         self.allocation_text.insert(tk.END, "-" * len(header) + "\n")
@@ -173,7 +187,19 @@ class BrokerProblemGUI:
             for j in range(num_original_customers):
                 row_str += f"{allocation[i][j]:<7}"
             self.allocation_text.insert(tk.END, row_str + "\n")
+
+        self.profit_matrix_text.insert(tk.END, "Unit Profit Matrix:\n")
+        self.profit_matrix_text.insert(tk.END, header + "\n")
+        self.profit_matrix_text.insert(tk.END, "-" * len(header) + "\n")
+        for i in range(num_original_suppliers):
+            row_str = f"S{i + 1:<2} |"
+            for j in range(num_original_customers):
+                row_str += f"{profit_matrix[i][j]:<7}"
+            self.profit_matrix_text.insert(tk.END, row_str + "\n")
+
         self.allocation_text.config(state=tk.DISABLED)
+        self.profit_matrix_text.config(state=tk.DISABLED)
+
         for var, val in zip(self.results_vars, [purchase, transport, revenue, profit, iterations]):
             var.set(str(val))
 
@@ -184,10 +210,10 @@ class BrokerProblemGUI:
         try:
             data = load_from_csv(path)
 
-            self._is_loading = True  # Włączamy blokadę
+            self._is_loading = True
             self.num_suppliers.set(len(data['supply']))
             self.num_customers.set(len(data['demand']))
-            self._is_loading = False  # Wyłączamy blokadę
+            self._is_loading = False
 
             self.update_data_inputs(data)
 
@@ -222,5 +248,10 @@ class BrokerProblemGUI:
         self.allocation_text.config(state=tk.NORMAL)
         self.allocation_text.delete(1.0, tk.END)
         self.allocation_text.config(state=tk.DISABLED)
+
+        self.profit_matrix_text.config(state=tk.NORMAL)
+        self.profit_matrix_text.delete(1.0, tk.END)
+        self.profit_matrix_text.config(state=tk.DISABLED)
+
         for var in self.results_vars:
             var.set("")
